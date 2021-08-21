@@ -1,10 +1,12 @@
 ﻿using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
 using Core.Utilities.Results.Abstract;
 using Core.Utilities.Results.Concrete;
 using DataAccess.Abstract;
 using Entities.Concrete;
 using Entities.DTOs;
+using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -22,7 +24,7 @@ namespace Business.Concrete
 
         public IResult Insert(Car car)
         {
-            if (car.Descriptions.Length >= 2 && car.DailyPrice > 0)
+            /*if (car.Descriptions.Length >= 2 && car.DailyPrice > 0)
             {
                 _carDal.Add(car);
                 return new SuccessResult(Message.CarAdded);
@@ -30,7 +32,18 @@ namespace Business.Concrete
             else
             {
                 return new ErrorResult(Message.InvalidText);
+            }*/
+
+            var context = new ValidationContext<Car>(car);
+            CarValidator carValidator = new CarValidator();
+            var result = carValidator.Validate(context);
+            if (!result.IsValid)
+            {
+                throw new ValidationException(result.Errors);
             }
+
+            _carDal.Add(car);
+            return new SuccessResult(Message.CarAdded);
         }
 
         public IDataResult<Car> GetById(int id)
